@@ -18,8 +18,11 @@ echo "[start] Booting ComfyUI from $COMFYUI_DIR (baked in image)..."
 
 # --- Volume custom nodes (BlockFlow): link packages from network volume so
 # cold-start workers pick up nodes that aren't baked into the image.
+# SKIP_VOLUME_CUSTOM_NODES=1 keeps boot on baked nodes only (Krea2 GOLD stills).
 VOL_CUSTOM_NODES="/runpod-volume/ComfyUI/custom_nodes"
-if [ -d "$VOL_CUSTOM_NODES" ]; then
+if [ "${SKIP_VOLUME_CUSTOM_NODES:-}" = "1" ]; then
+    echo "[start] SKIP_VOLUME_CUSTOM_NODES=1 — not linking volume custom nodes"
+elif [ -d "$VOL_CUSTOM_NODES" ]; then
     echo "[start] Linking custom nodes from $VOL_CUSTOM_NODES"
     mkdir -p "$COMFYUI_DIR/custom_nodes"
     for d in "$VOL_CUSTOM_NODES"/*; do

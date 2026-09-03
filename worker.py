@@ -56,6 +56,9 @@ def _link_volume_custom_nodes() -> list[str]:
     Returns list of newly linked package names. Used so volume-installed custom
     nodes work on FlashBoot resumes that skip start.sh.
     """
+    if os.environ.get("SKIP_VOLUME_CUSTOM_NODES", "").strip() == "1":
+        print("[worker] SKIP_VOLUME_CUSTOM_NODES=1 — not linking volume custom nodes", flush=True)
+        return []
     vol = "/runpod-volume/ComfyUI/custom_nodes"
     dst = "/ComfyUI/custom_nodes"
     linked: list[str] = []
