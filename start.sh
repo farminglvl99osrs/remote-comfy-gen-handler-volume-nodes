@@ -214,6 +214,12 @@ else
     echo "[start] All custom nodes loaded OK"
 fi
 
+# RunPod Python SDK 1.7.11–1.10.0 corrupts per-worker job tracking on
+# network-volume endpoints (ComfyUI), so workers sit ready/idle and never
+# pull IN_QUEUE jobs. Force a known-good SDK before the handler starts.
+echo "[start] Ensuring runpod>=1.10.1..."
+pip install -q 'runpod>=1.10.1'
+
 # Start the RunPod worker handler
 echo "[start] Starting RunPod handler..."
 exec python3 "$RUNTIME_DIR/worker.py"
