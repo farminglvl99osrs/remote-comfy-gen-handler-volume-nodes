@@ -111,7 +111,9 @@ fi
 # attention instead. Import success is NOT enough (that's what build-time checks
 # miss); we launch an actual kernel and require it to complete.
 SAGE_FLAG=""
-if python3 - >/dev/null 2>&1 <<'SAGEPROBE'
+# timeout: sageattn can hang indefinitely on some Blackwell hosts, which
+# leaves the worker "RUNNING" but never starting the RunPod job handler.
+if timeout 15 python3 - >/dev/null 2>&1 <<'SAGEPROBE'
 import torch
 from sageattention import sageattn
 q = torch.randn(1, 8, 128, 64, dtype=torch.float16, device="cuda")
@@ -122,7 +124,7 @@ then
     SAGE_FLAG="--use-sage-attention"
     echo "[start] SageAttention kernel probe passed — enabling --use-sage-attention"
 else
-    echo "[start] SageAttention kernel probe failed — using default attention"
+    echo "[start] SageAttention kernel probe failed or timed out — using default attention"
 fi
 
 python3 main.py \
@@ -139,7 +141,7 @@ COMFYUI_PID=$!
 echo "[start] ComfyUI starting (PID: $COMFYUI_PID)..."
 
 # Wait for ComfyUI to be ready
-MAX_WAIT=120
+MAX_WAIT=300
 WAITED=0
 while [ $WAITED -lt $MAX_WAIT ]; do
     if curl -s "http://127.0.0.1:$COMFYUI_PORT/system_stats" > /dev/null 2>&1; then
